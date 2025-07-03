@@ -28,9 +28,6 @@ export default function Sidebar() {
 
   return (
     <div className="hidden md:flex h-full w-64 flex-col text-neutral-800 dark:text-neutral-100 bg-neutral-100 dark:bg-neutral-900 border-r dark:border-neutral-500 border-neutral-200">
-      <h1 className="font-bold whitespace-nowrap text-lg text-center mt-4">
-        Flash Code
-      </h1>
       <nav className="mt-20 flex-1 space-y-1 px-2 py-4">
         {navigation.map((item) => {
           const isActive = pathname === item.href;
