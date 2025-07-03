@@ -12,13 +12,13 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
-    label: "Make Card",
+    label: "Create New Card",
     href: "/dashboard/cards/new",
     icon: FilePlus,
   },
   {
-    label: "Card queue",
-    href: "/dashboard/queue",
+    label: "Test Yourself",
+    href: "/dashboard/cards",
     icon: Brain,
   },
 ];

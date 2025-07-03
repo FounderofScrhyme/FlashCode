@@ -7,16 +7,44 @@ generator client {
     provider = "prisma-client-js"
 }
 
-model Card {
-    id        String  @id @default(cuid())
-    question  String
-    answer    String
-    language  String
-    reviewCount  Int  @default(0)
-    nextReview   DateTime
-    userId    String
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
+// User model for authentication and user management
+model User {
+    id        String   @id @default(cuid())
+    clerkId   String   @unique // Clerk authentication ID
+    email     String   @unique
+    name      String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-    @@index([userId, nextReview])
+    // Relations
+    cards     Card[]
+
+    @@index([clerkId])
+    @@index([email])
 }
+
+// Flashcard model
+model Card {
+    id          String   @id @default(cuid())
+    question    String
+    answer      String
+    language    String
+    tags        String[] // Array of tags for categorization
+    isActive    Boolean  @default(true)
+    reviewCount Int      @default(0)
+    nextReview  DateTime
+    userId      String
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    // Relations
+    user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId])
+    @@index([userId, isActive])
+    @@index([userId, nextReview])
+    @@index([language])
+}
+
+
+

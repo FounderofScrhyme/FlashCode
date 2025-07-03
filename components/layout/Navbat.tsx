@@ -36,14 +36,12 @@ export default function Navbar() {
   };
   return (
     // bg-white/10 backdrop-blur-md後で使いたければ
-    <div className="container mx-auto max-w-screen-2xl">
+    <div className="w-full">
       {isSignedIn ? (
-        <header className="flex items-center justify-between py-4">
-          <h1 className="ml-5 font-bold whitespace-nowrap text-lg">
-            Flash Code
-          </h1>
+        <header className="flex items-center justify-between py-4 px-5">
+          <h1 className="font-bold whitespace-nowrap text-lg">FlashCode</h1>
 
-          <div className="flex items-center gap-4 mr-5">
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-4">
               <div className="hidden md:flex space-x-2">
                 <SignOutButton>
@@ -57,7 +55,7 @@ export default function Navbar() {
 
               <ModeToggle />
 
-              <button onClick={handleMenuOpen} className="z-10 space-y-2">
+              <button onClick={handleMenuOpen} className="space-y-2 z-50">
                 <div
                   className={
                     openMenu
@@ -86,7 +84,7 @@ export default function Navbar() {
           <nav
             className={
               openMenu
-                ? "fixed text-center bg-white right-0 top-0 w-[100%] lg:w-[25%] h-screen flex flex-col justify-center ease-linear duration-500 dark:bg-neutral-950"
+                ? "fixed text-center bg-white right-0 top-0 w-[100%] lg:w-[25%] h-screen flex flex-col justify-center ease-linear duration-500 dark:bg-neutral-950 z-40"
                 : "fixed right-[-100%] top-0 w-[100%] md:w-[25%] h-screen flex flex-col justify-center ease-linear duration-400"
             }
           >
@@ -103,14 +101,14 @@ export default function Navbar() {
           </nav>
         </header>
       ) : (
-        <header className="relative flex items-center justify-between py-4">
-          <div className="ml-5">
-            <h1 className="font-bold whitespace-nowrap text-lg">Flash Code</h1>
+        <header className="relative flex items-center justify-between py-4 px-5">
+          <div>
+            <h1 className="font-bold whitespace-nowrap text-lg">FlashCode</h1>
           </div>
 
           <div className="flex flex-1" />
 
-          <div className="flex items-center gap-4 mr-5">
+          <div className="flex items-center gap-4">
             <SignInButton mode="modal">
               <span className="bg-primary md:hidden text-white dark:text-neutral-800 font-semibold rounded-full px-6 py-2 hover:bg-primary/80 transition">
                 Log in
