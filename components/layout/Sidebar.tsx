@@ -17,7 +17,7 @@ const navigation = [
     icon: FilePlus,
   },
   {
-    label: "Test Yourself",
+    label: "Manage Cards",
     href: "/dashboard/cards",
     icon: Brain,
   },

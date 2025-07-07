@@ -1,7 +1,7 @@
 "use client";
 
 import Editor from "@monaco-editor/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface CodeEditorProps {
   value?: string;
@@ -19,6 +19,11 @@ export default function CodeEditor({
   height = "500px",
 }: CodeEditorProps) {
   const [editorValue, setEditorValue] = useState(value);
+
+  // Sync internal state with external value
+  useEffect(() => {
+    setEditorValue(value);
+  }, [value]);
 
   const handleEditorChange = (value: string | undefined) => {
     const newValue = value || "";

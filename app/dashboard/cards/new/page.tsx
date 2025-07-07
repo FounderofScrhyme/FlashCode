@@ -72,10 +72,22 @@ export default function NewCardPage() {
         tags,
       });
 
-      router.push("/dashboard/cards");
+      // Show success message
+      toast.success("Card created successfully!");
+
+      // Reset form
+      setQuestion("");
+      setAnswer("");
+      setLanguage("javascript");
+      setQuestionType("text");
+      setAnswerType("code");
+      setTags([]);
+      setTagInput("");
     } catch (error) {
       console.error("Card creation error:", error);
-      toast(error instanceof Error ? error.message : "Failed to create card");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create card"
+      );
     } finally {
       setIsLoading(false);
     }

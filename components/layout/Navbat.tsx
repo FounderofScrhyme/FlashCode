@@ -39,7 +39,7 @@ export default function Navbar() {
     <div className="w-full">
       {isSignedIn ? (
         <header className="flex items-center justify-between py-4 px-5">
-          <h1 className="font-bold whitespace-nowrap text-lg">FlashCode</h1>
+          <h1 className="font-bold whitespace-nowrap text-lg">Ncoder</h1>
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-4">
@@ -103,7 +103,7 @@ export default function Navbar() {
       ) : (
         <header className="relative flex items-center justify-between py-4 px-5">
           <div>
-            <h1 className="font-bold whitespace-nowrap text-lg">FlashCode</h1>
+            <h1 className="font-bold whitespace-nowrap text-lg">Ncoder</h1>
           </div>
 
           <div className="flex flex-1" />

@@ -13,7 +13,7 @@ const fontSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Flash Code",
+  title: "Ncoder",
   description: "app for memorizing codes, functions, etc...",
 };
 

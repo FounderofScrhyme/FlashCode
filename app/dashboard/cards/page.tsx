@@ -2,17 +2,75 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { getCards, Card } from "@/actions/cardActions";
-import { Plus, FileText, Calendar, RefreshCw } from "lucide-react";
+import { getCards, deleteCard, updateCard, Card } from "@/actions/cardActions";
+import {
+  DeleteModal,
+  EditModal,
+  SearchBar,
+  CardGrid,
+  EmptyState,
+  LoadingState,
+} from "@/components/cards";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
 
 export default function CardPage() {
+  const router = useRouter();
   const [cards, setCards] = useState<Card[]>([]);
+  const [filteredCards, setFilteredCards] = useState<Card[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [displayedCards, setDisplayedCards] = useState<Card[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(6);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState<"tag" | "language">("tag");
+  const [deleteModal, setDeleteModal] = useState<{
+    isOpen: boolean;
+    cardId: string | null;
+    cardTitle: string;
+  }>({
+    isOpen: false,
+    cardId: null,
+    cardTitle: "",
+  });
+  const [editModal, setEditModal] = useState<{
+    isOpen: boolean;
+    card: Card | null;
+  }>({
+    isOpen: false,
+    card: null,
+  });
 
   useEffect(() => {
     loadCards();
   }, []);
+
+  useEffect(() => {
+    // Filter cards based on search query
+    if (searchQuery.trim() === "") {
+      setFilteredCards(cards);
+    } else {
+      const filtered = cards.filter((card) => {
+        if (searchType === "tag") {
+          return card.tags.some((tag) =>
+            tag.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+        } else {
+          return card.language
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase());
+        }
+      });
+      setFilteredCards(filtered);
+    }
+  }, [cards, searchQuery, searchType]);
+
+  useEffect(() => {
+    // Display first 6 cards from filtered results
+    setDisplayedCards(filteredCards.slice(0, 6));
+    setCurrentIndex(6);
+  }, [filteredCards]);
 
   const loadCards = async () => {
     try {
@@ -20,31 +78,64 @@ export default function CardPage() {
       setCards(fetchedCards);
     } catch (error) {
       console.error("Card fetch error:", error);
-      // Handle error appropriately
     } finally {
       setIsLoading(false);
     }
   };
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
+  const handleShowMore = () => {
+    const nextCards = filteredCards.slice(currentIndex, currentIndex + 6);
+    setDisplayedCards([...displayedCards, ...nextCards]);
+    setCurrentIndex(currentIndex + 6);
+  };
+
+  const handleDelete = (cardId: string, cardTitle: string) => {
+    setDeleteModal({ isOpen: true, cardId, cardTitle });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteModal.cardId) return;
+
+    try {
+      await deleteCard(deleteModal.cardId);
+      await loadCards(); // Reload cards
+      setDeleteModal({ isOpen: false, cardId: null, cardTitle: "" });
+      toast.success("Card deleted successfully!");
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete card");
+    }
+  };
+
+  const handleEdit = (card: Card) => {
+    setEditModal({ isOpen: true, card });
+  };
+
+  const saveEdit = async (formData: {
+    question: string;
+    answer: string;
+    language: string;
+    tags: string[];
+  }) => {
+    if (!editModal.card) return;
+
+    try {
+      await updateCard(editModal.card.id, formData);
+      await loadCards(); // Reload cards
+      setEditModal({ isOpen: false, card: null });
+      toast.success("Card updated successfully!");
+    } catch (error) {
+      console.error("Update error:", error);
+      toast.error("Failed to update card");
+    }
+  };
+
+  const handlePractice = (cardId: string) => {
+    router.push(`/dashboard/cards/practice?id=${cardId}`);
   };
 
   if (isLoading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-64">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <RefreshCw className="h-4 w-4 animate-spin" />
-            Loading...
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingState />;
   }
 
   return (
@@ -52,9 +143,7 @@ export default function CardPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold">Flashcards</h1>
-          <p className="text-muted-foreground mt-2">
-            Manage flashcards specialized for code memorization
-          </p>
+          <p className="text-muted-foreground mt-2">Manage flashcards</p>
         </div>
         <Link href="/dashboard/cards/new">
           <Button className="flex items-center gap-2">
@@ -65,83 +154,56 @@ export default function CardPage() {
       </div>
 
       {cards.length === 0 ? (
-        <div className="text-center py-12">
-          <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">No cards yet</h3>
-          <p className="text-muted-foreground mb-6">
-            Create your first flashcard to start memorizing code
-          </p>
-          <Link href="/dashboard/cards/new">
-            <Button className="flex items-center gap-2">
-              <Plus className="h-4 w-4" />
-              Create Card
-            </Button>
-          </Link>
-        </div>
+        <EmptyState
+          title="No cards yet"
+          description="Create your first flashcard"
+        />
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {cards.map((card) => (
-            <div
-              key={card.id}
-              className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <FileText className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground uppercase">
-                    {card.language}
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Calendar className="h-3 w-3" />
-                  {formatDate(card.createdAt)}
-                </div>
-              </div>
+        <>
+          <SearchBar
+            searchQuery={searchQuery}
+            searchType={searchType}
+            onSearchChange={setSearchQuery}
+            onSearchTypeChange={setSearchType}
+            filteredCardsCount={filteredCards.length}
+          />
 
-              {/* タグ表示 */}
-              {card.tags && card.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {card.tags.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="inline-flex items-center px-2 py-1 bg-secondary text-secondary-foreground text-xs rounded-md"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <div>
-                  <h3 className="font-medium text-sm mb-1">Question</h3>
-                  <div className="text-sm text-muted-foreground bg-muted p-2 rounded  font-mono overflow-hidden">
-                    {card.question.length > 100
-                      ? `${card.question.substring(0, 100)}...`
-                      : card.question}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-medium text-sm mb-1">Answer</h3>
-                  <div className="text-sm text-muted-foreground bg-muted p-2 rounded font-mono overflow-hidden">
-                    {card.answer.length > 100
-                      ? `${card.answer.substring(0, 100)}...`
-                      : card.answer}
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-3 border-t">
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Reviews: {card.reviewCount}</span>
-                  <span>Next review: {formatDate(card.nextReview)}</span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+          {filteredCards.length === 0 ? (
+            <EmptyState
+              title="No cards found"
+              description={`No cards match the ${searchType} "${searchQuery}"`}
+              showCreateButton={false}
+            />
+          ) : (
+            <CardGrid
+              cards={displayedCards}
+              currentIndex={currentIndex}
+              totalCards={filteredCards.length}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onPractice={handlePractice}
+              onShowMore={handleShowMore}
+            />
+          )}
+        </>
       )}
+
+      {/* Modals */}
+      <DeleteModal
+        isOpen={deleteModal.isOpen}
+        onClose={() =>
+          setDeleteModal({ isOpen: false, cardId: null, cardTitle: "" })
+        }
+        onConfirm={confirmDelete}
+        cardTitle={deleteModal.cardTitle}
+      />
+
+      <EditModal
+        isOpen={editModal.isOpen}
+        onClose={() => setEditModal({ isOpen: false, card: null })}
+        onSave={saveEdit}
+        card={editModal.card}
+      />
     </div>
   );
 }

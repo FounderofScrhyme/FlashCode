@@ -21,7 +21,7 @@ export default async function Home() {
         </SignUpButton>
 
         <div className="">
-          <h1>Flash Code</h1>
+          <h1>Ncoder</h1>
           <p>
             This app is inspired by The Programjmer&apos;s Brain: What every
             programmer needs to know about cognition.
